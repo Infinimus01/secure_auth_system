@@ -1,5 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const verifyToken = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -28,7 +30,7 @@ router.post("/signup", async (req, res) => {
 
 //login route
 
-router.post("/login", async (req, res) => {
+router.post("/jwt-login", async (req, res) => {
   const { username, password } = req.body;
 
   const user = users.find((u) => u.username === username);
@@ -39,25 +41,30 @@ router.post("/login", async (req, res) => {
 
   //create session
 
-  req.session.username = username;
+  // req.session.username = username;
 
-  res.json({ msg: " login successful" });
+  // generate jwt
+
+  const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRY,
+  });
+
+  res.json({ msg: " JWT-login successful" });
 });
 
 // dashboard route
 
-router.get("/dashboard", async (req, res) => {
+router.get("/JWT-dashboard", verifyToken, async (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ msg: "unauthorized user" });
   }
-  res.json({ msg: "welcome to dashboard" });
+  res.json({ msg: "welcome to JWT-dashboard" });
 });
-//logout route 
+//logout route
 
-router.post("/logout", async(req, res)=> {
+router.post("/logout", async (req, res) => {
   req.session.destroy();
-  res.json({msg: "logged out successfully"})
-
+  res.json({ msg: "logged out successfully" });
 });
 
 module.exports = router;
