@@ -2,11 +2,12 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const verifyToken = require("../middleware/auth");
+const User = require("../models/User");
 
 const router = express.Router();
 
-// fake db
-const users = [];
+// // fake db
+// const users = [];
 
 //signup route
 
@@ -21,7 +22,9 @@ router.post("/signup", async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   //save user
-  users.push({ username, password: hashedPassword });
+  // users.push({ username, password: hashedPassword });
+  const newUser = new User({ username, password: hashedPassword });
+  await newUser.save();
 
   //print res
 
@@ -30,7 +33,7 @@ router.post("/signup", async (req, res) => {
 
 //login route
 
-router.post("/jwt-login", async (req, res) => {
+router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   const user = users.find((u) => u.username === username);
